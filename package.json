@@ -2,10 +2,15 @@
   "name": "secret-santa-smart-contracts",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "test": "truffle test",
+    "run-ganache": "ganache-cli"
+  },
   "dependencies": {
-    "dotenv": "^6.0.0",
+    "@openzeppelin/contracts": "^2.4.0",
     "@openzeppelin/test-helpers": "^0.5.4",
     "@truffle/hdwallet-provider": "^1.0.25",
+    "dotenv": "^6.0.0",
     "web3-utils": "^1.2.4"
   },
   "devDependencies": {
