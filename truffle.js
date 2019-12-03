@@ -1,5 +1,5 @@
 require('dotenv').config();
-const HDWalletProvider = require('truffle-hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 const Utils = require('web3-utils');
 
 const mainnetUrl = `https://mainnet.infura.io/v3/${process.env.INFURA}`;
