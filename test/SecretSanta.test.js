@@ -1,191 +1,152 @@
 /* eslint-env node, mocha */
 /* global artifacts, contract, assert */
+/* eslint-disable no-await-in-loop */
 
 const {
   expectEvent,
   expectRevert,
   time,
 } = require('@openzeppelin/test-helpers');
+
 const utils = require('web3-utils');
 
 const SecretSanta = artifacts.require('SecretSanta');
-const SantaToken = artifacts.require('SantaToken');
+const SantaFungibleToken = artifacts.require('SantaFungibleToken');
+const SantaNonFungibleToken = artifacts.require('SantaNonFungibleToken');
 
 contract('SecretSanta', (accounts) => {
   let secretSanta;
-  let token;
+  let fungible;
+  let nft;
 
   beforeEach(async () => {
     secretSanta = await SecretSanta.new();
-    token = await SantaToken.new();
+    fungible = await SantaFungibleToken.new();
+    nft = await SantaNonFungibleToken.new();
   });
 
-  it('Should promise a present', async () => {
+  it('Should send one consolation', async () => {
     const tokenId = '0';
-    const salt = 'jasper';
 
-    const promiseHash = utils.soliditySha3(
-      {
-        type: 'address',
-        value: token.address,
-      },
-      {
-        type: 'uint256',
-        value: tokenId,
-      },
-      {
-        type: 'bytes32',
-        value: utils.soliditySha3(salt),
-      },
-    );
-
-    const receipt = await secretSanta.promisePresent(promiseHash, {
-      from: accounts[0],
-    });
-
-    expectEvent(receipt, 'NewPromisedPresent', {
-      secretSanta: accounts[0],
-      promiseHash,
-    });
-  });
-
-  it('Should promise a present but not reveal it (Be patient)', async () => {
-    const tokenId = '0';
-    const salt = 'jasper';
-
-    await token.getSantaToken(
+    await nft.getSantaNonFungibleToken(
       accounts[0],
-      tokenId, {
-        from: accounts[0],
-      },
-    );
-
-    await token.approve(
-      secretSanta.address,
-      tokenId, {
-        from: accounts[0],
-      },
-    );
-
-    const promiseHash = utils.soliditySha3(
-      {
-        type: 'address',
-        value: token.address,
-      },
-      {
-        type: 'uint256',
-        value: tokenId,
-      },
-      {
-        type: 'bytes32',
-        value: utils.soliditySha3(salt),
-      },
-    );
-
-    await secretSanta.promisePresent(promiseHash, {
-      from: accounts[0],
-    });
-
-    await expectRevert(
-      secretSanta.revealPresent(
-        token.address,
-        tokenId,
-        utils.soliditySha3(salt), {
-          from: accounts[0],
-        },
-      ),
-      'Be patien',
-    );
-  });
-
-  it('Should promise a present and reveal it', async () => {
-    const tokenId = '0';
-    const salt = 'jasper';
-
-    await token.getSantaToken(
-      accounts[0],
-      tokenId, {
-        from: accounts[0],
-      },
-    );
-
-    await token.approve(
-      secretSanta.address,
-      tokenId, {
-        from: accounts[0],
-      },
-    );
-
-    const promiseHash = utils.soliditySha3(
-      {
-        type: 'address',
-        value: token.address,
-      },
-      {
-        type: 'uint256',
-        value: tokenId,
-      },
-      {
-        type: 'bytes32',
-        value: utils.soliditySha3(salt),
-      },
-    );
-
-    await secretSanta.promisePresent(promiseHash, {
-      from: accounts[0],
-    });
-
-    const expectedRevealPeriodStart = utils.toBN('1577145600');
-    const revealPeriodStart = await secretSanta.revealPeriodStart();
-    assert.ok(expectedRevealPeriodStart.eq(revealPeriodStart), 'Reveal period is wrong');
-
-    await time.increaseTo(utils.toBN('1577191000'));
-
-    const receipt = await secretSanta.revealPresent(
-      token.address,
       tokenId,
-      utils.soliditySha3(salt), {
+    );
+
+    await nft.approve(
+      secretSanta.address,
+      tokenId,
+    );
+
+    await secretSanta.sendConsolation(
+      [nft.address],
+      [tokenId], {
         from: accounts[0],
       },
     );
 
-    expectEvent(
-      receipt,
-      'PresentRevealed', {
-        secretSanta: accounts[0],
-        tokenContractAddress: token.address,
-        tokenId,
-      },
-    );
+    const secretSantas = await secretSanta.getSecretSantas();
 
-    const owner = await token.ownerOf(tokenId);
-    assert.equal(owner, secretSanta.address, 'NFT owner is wrong');
+    assert.equal(secretSantas.length, 1, 'Secret Santas total is wrong');
+    assert.ok(secretSantas.includes(accounts[0]), 'Secret Santas is wrong');
+
+    const owner = await nft.ownerOf(tokenId);
+    assert.equal(owner, secretSanta.address, 'Token owner is wrong');
   });
 
-  it('Should not promise a present (Too late)', async () => {
+  it('Should send one present after the consolation', async () => {
     const tokenId = '0';
-    const salt = 'jasper';
 
-    const promiseHash = utils.soliditySha3(
-      {
-        type: 'address',
-        value: token.address,
-      },
-      {
-        type: 'uint256',
-        value: tokenId,
-      },
-      {
-        type: 'bytes32',
-        value: utils.soliditySha3(salt),
-      },
+    await nft.getSantaNonFungibleToken(
+      accounts[0],
+      tokenId,
     );
 
-    await expectRevert(
-      secretSanta.promisePresent(promiseHash, {
+    await nft.approve(
+      secretSanta.address,
+      tokenId, {
         from: accounts[0],
-      }),
-      'Too late',
+      },
     );
+
+    await secretSanta.sendConsolation(
+      [nft.address],
+      [tokenId], {
+        from: accounts[0],
+      },
+    );
+
+    const tokenId2 = '1';
+
+    await nft.getSantaNonFungibleToken(
+      accounts[1],
+      tokenId2,
+    );
+
+    await nft.approve(
+      secretSanta.address,
+      tokenId2, {
+        from: accounts[1],
+      },
+    );
+
+    await secretSanta.sendPresent(
+      [nft.address],
+      [tokenId2], {
+        from: accounts[1],
+      },
+    );
+
+    const owner = await nft.ownerOf(tokenId2);
+
+    assert.equal(owner, accounts[0], 'NFT owner is wrong');
+  });
+
+  it('Should send one present after the consolation', async () => {
+    const tokenId = '0';
+
+    await nft.getSantaNonFungibleToken(
+      accounts[0],
+      tokenId,
+    );
+
+    await nft.approve(
+      secretSanta.address,
+      tokenId, {
+        from: accounts[0],
+      },
+    );
+
+    await secretSanta.sendConsolation(
+      [nft.address],
+      [tokenId], {
+        from: accounts[0],
+      },
+    );
+
+    const tokenId2 = '1';
+
+    await nft.getSantaNonFungibleToken(
+      accounts[1],
+      tokenId2,
+    );
+
+    await nft.approve(
+      secretSanta.address,
+      tokenId2, {
+        from: accounts[1],
+      },
+    );
+
+    await secretSanta.sendPresent(
+      [nft.address],
+      [tokenId2], {
+        from: accounts[1],
+      },
+    );
+
+    const owner = await nft.ownerOf(tokenId2);
+
+    assert.equal(owner, accounts[0], 'Nft owner is wrong');
   });
 });

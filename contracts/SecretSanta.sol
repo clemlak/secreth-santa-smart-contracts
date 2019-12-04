@@ -1,8 +1,8 @@
 pragma solidity 0.5.13;
 
 
-contract ERC721 {
-    function transferFrom(address from, address to, uint256 tokenId) public;
+contract ERC20OrERC721Token {
+    function transferFrom(address from, address to, uint256 value) public;
 }
 
 
@@ -11,86 +11,88 @@ contract ERC721 {
  * @dev This contract is the base of our project
  */
 contract SecretSanta {
-    struct Present {
-        bytes32 promiseHash;
-        address tokenContractAddress;
-        uint256 tokenId;
-        bool hasClaimedPresent;
-    }
+    address[] public secretSantas;
 
-    address[] private secretSantas;
-    mapping (address => Present) private presents;
+    uint256 public end = 1577836799;
 
-    /* December 24th 2019 */
-    uint256 public revealPeriodStart = 1577145600;
+    address[] public consolationTokens;
+    uint256[] public consolationTokensId;
 
-    /* January 1st 2020 */
-    uint256 public latePresentsStart = 1577836800;
-
-    event NewPromisedPresent(
-        address indexed secretSanta,
-        bytes32 promiseHash
+    event PresentSent(
+        address indexed from,
+        address indexed to,
+        address[] tokens,
+        uint256[] tokensId
     );
 
-    event PresentRevealed(
-        address indexed secretSanta,
-        address tokenContractAddress,
-        uint256 tokenId
-    );
-
-    function promisePresent(
-        bytes32 promiseHash
+    function sendConsolation(
+        address[] calldata tokens,
+        uint256[] calldata tokensId
     ) external {
         require(
-            revealPeriodStart > now,
-            "Too late"
+            tokens.length == tokensId.length,
+            "Invalid present"
         );
 
-        presents[msg.sender] = Present({
-            promiseHash: promiseHash,
-            tokenContractAddress: address(0),
-            tokenId: 0,
-            hasClaimedPresent: false
-        });
+        for (uint256 i = 0; i < tokens.length; i += 1) {
+            ERC20OrERC721Token token = ERC20OrERC721Token(tokens[i]);
+            token.transferFrom(
+                msg.sender,
+                address(this),
+                tokensId[i]
+            );
 
-        emit NewPromisedPresent(
-            msg.sender,
-            promiseHash
-        );
+            consolationTokens.push(tokens[i]);
+            consolationTokensId.push(tokensId[i]);
+        }
+
+        secretSantas.push(msg.sender);
     }
 
-    function revealPresent(
-        address tokenContractAddress,
-        uint256 tokenId,
-        bytes32 salt
+    function sendPresent(
+        address[] calldata tokens,
+        uint256[] calldata tokensId
     ) external {
         require(
-            now > revealPeriodStart,
-            "Be patient"
+            tokens.length == tokensId.length,
+            "Invalid present"
+        );
+
+        for (uint256 i = 0; i < tokens.length; i += 1) {
+            ERC20OrERC721Token token = ERC20OrERC721Token(tokens[i]);
+            token.transferFrom(
+                msg.sender,
+                secretSantas[secretSantas.length - 1],
+                tokensId[i]
+            );
+        }
+
+        secretSantas.push(msg.sender);
+    }
+
+    function claimConsolation() external {
+        require(
+            now > end,
+            "Not yet"
         );
 
         require(
-            presents[msg.sender].promiseHash ==
-            keccak256(
-                abi.encodePacked(
-                    tokenContractAddress,
-                    tokenId,
-                    salt
-                )
-            ),
-            "Wrong NFT"
+            msg.sender == secretSantas[secretSantas.length - 1],
+            "Consolation not sender"
         );
 
-        presents[msg.sender].tokenContractAddress = tokenContractAddress;
-        presents[msg.sender].tokenId = tokenId;
+        for (uint256 i = 0; i < consolationTokens.length; i += 1) {
+            ERC20OrERC721Token token = ERC20OrERC721Token(consolationTokens[i]);
 
-        ERC721 tokenContract = ERC721(tokenContractAddress);
-        tokenContract.transferFrom(msg.sender, address(this), tokenId);
+            token.transferFrom(
+                address(this),
+                msg.sender,
+                consolationTokensId[i]
+            );
+        }
+    }
 
-        emit PresentRevealed(
-            msg.sender,
-            tokenContractAddress,
-            tokenId
-        );
+    function getSecretSantas() external view returns (address[] memory) {
+        return secretSantas;
     }
 }
