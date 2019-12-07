@@ -2,8 +2,8 @@ require('dotenv').config();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const Utils = require('web3-utils');
 
-const mainnetUrl = `https://mainnet.infura.io/v3/${process.env.INFURA}`;
-const rinkebyUrl = `https://rinkeby.infura.io/v3/${process.env.INFURA}`;
+const mainnetUrl = `https://mainnet.infura.io/v3/${process.env.RIVET}`;
+const rinkebyUrl = `https://${process.env.RIVET}.rinkeby.rpc.rivet.cloud/`;
 
 module.exports = {
   networks: {
@@ -19,7 +19,7 @@ module.exports = {
         return new HDWalletProvider(process.env.MNEMONIC, rinkebyUrl, 0);
       },
       network_id: 4,
-      gasPrice: Utils.toWei('2', 'gwei'),
+      gasPrice: Utils.toWei('10', 'gwei'),
       gas: 7000000,
     },
     live: {
