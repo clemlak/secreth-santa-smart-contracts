@@ -15,8 +15,9 @@ contract ERC721 {
  */
 contract SecretSanta is Ownable {
     address[] public secretSantas;
+    bool public isPrizeClaimed = false;
 
-    uint256 public lastPresentAt = 0;
+    uint256 public lastPresentAt;
     uint256 public prizeDelay;
 
     address[] public prizeTokens;
@@ -29,6 +30,12 @@ contract SecretSanta is Ownable {
         address indexed to,
         address token,
         uint256 tokenId
+    );
+
+    event PrizeAdded(
+        address indexed from,
+        address tokens[],
+        address tokensId[],
     );
 
     constructor(
@@ -76,6 +83,12 @@ contract SecretSanta is Ownable {
 
         secretSantas.push(msg.sender);
         lastPresentAt = now;
+
+        emit PrizeAdded(
+            msg.sender,
+            tokens,
+            tokensId,
+        );
     }
 
     /**
@@ -107,6 +120,13 @@ contract SecretSanta is Ownable {
 
         secretSantas.push(msg.sender);
         lastPresentAt = now;
+
+        emit PresentSent(
+            msg.sender,
+            secretSantas[secretSantas.length - 1],
+            tokenAddress,
+            tokenId
+        );
     }
 
     /**
@@ -132,6 +152,8 @@ contract SecretSanta is Ownable {
                 prizeTokensId[i]
             );
         }
+
+        isPrizeClaimed = true;
     }
 
     function updateWhitelist(
@@ -155,5 +177,9 @@ contract SecretSanta is Ownable {
             prizeTokens,
             prizeTokensId
         );
+    }
+
+    function isTooLate() external view returns (bool) {
+        return now > lastPresentAt + prizeDelay;
     }
 }
