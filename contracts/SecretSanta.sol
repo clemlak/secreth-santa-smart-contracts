@@ -17,10 +17,10 @@ contract SecretSanta is Ownable {
     address[] public secretSantas;
 
     uint256 public lastPresentAt = 0;
-    uint256 public consolationDelay = 2 weeks;
+    uint256 public prizeDelay;
 
-    address[] public consolationTokens;
-    uint256[] public consolationTokensId;
+    address[] public prizeTokens;
+    uint256[] public prizeTokensId;
 
     mapping (address => bool) public whitelist;
 
@@ -31,16 +31,19 @@ contract SecretSanta is Ownable {
         uint256 tokenId
     );
 
-    constructor() public {
+    constructor(
+        uint256 initialPrizeDelay
+    ) public {
         lastPresentAt = now;
+        prizeDelay = initialPrizeDelay;
     }
 
     /**
-     * @notice Send tokens to the consolation present
+     * @notice Send tokens to the prize
      * @param tokens An array with the address of the contracts
      * @param tokensId An array with the id of the tokens
      */
-    function sendConsolation(
+    function sendPrize(
         address[] calldata tokens,
         uint256[] calldata tokensId
     ) external {
@@ -50,7 +53,7 @@ contract SecretSanta is Ownable {
         );
 
         require(
-            lastPresentAt + consolationDelay > now,
+            lastPresentAt + prizeDelay > now,
             "Too late"
         );
 
@@ -67,8 +70,8 @@ contract SecretSanta is Ownable {
                 tokensId[i]
             );
 
-            consolationTokens.push(tokens[i]);
-            consolationTokensId.push(tokensId[i]);
+            prizeTokens.push(tokens[i]);
+            prizeTokensId.push(tokensId[i]);
         }
 
         secretSantas.push(msg.sender);
@@ -85,7 +88,7 @@ contract SecretSanta is Ownable {
         uint256 tokenId
     ) external {
         require(
-            lastPresentAt + consolationDelay > now,
+            lastPresentAt + prizeDelay > now,
             "Too late"
         );
 
@@ -107,11 +110,11 @@ contract SecretSanta is Ownable {
     }
 
     /**
-     * @notice Claims the consolation present
+     * @notice Claims the prize
      */
-    function claimConsolation() external {
+    function claimPrize() external {
         require(
-            now > lastPresentAt + consolationDelay,
+            now > lastPresentAt + prizeDelay,
             "Not yet"
         );
 
@@ -120,13 +123,13 @@ contract SecretSanta is Ownable {
             "Sender not last Santa"
         );
 
-        for (uint256 i = 0; i < consolationTokens.length; i += 1) {
-            ERC721 token = ERC721(consolationTokens[i]);
+        for (uint256 i = 0; i < prizeTokens.length; i += 1) {
+            ERC721 token = ERC721(prizeTokens[i]);
 
             token.transferFrom(
                 address(this),
                 msg.sender,
-                consolationTokensId[i]
+                prizeTokensId[i]
             );
         }
     }
@@ -144,13 +147,13 @@ contract SecretSanta is Ownable {
         return secretSantas;
     }
 
-    function getConsolation() external view returns (
+    function getPrize() external view returns (
         address[] memory tokens,
         uint256[] memory tokensId
     ) {
         return (
-            consolationTokens,
-            consolationTokensId
+            prizeTokens,
+            prizeTokensId
         );
     }
 }

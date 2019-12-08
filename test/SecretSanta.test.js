@@ -18,7 +18,7 @@ contract('SecretSanta', (accounts) => {
   let nft;
 
   beforeEach(async () => {
-    secretSanta = await SecretSanta.new();
+    secretSanta = await SecretSanta.new(60 * 5);
     nft = await SantaNonFungibleToken.new();
   });
 
@@ -46,7 +46,7 @@ contract('SecretSanta', (accounts) => {
     );
   });
 
-  it('Should send a consolation', async () => {
+  it('Should send a prize', async () => {
     const tokenId = '0';
 
     await nft.getSantaNonFungibleToken(
@@ -66,7 +66,7 @@ contract('SecretSanta', (accounts) => {
       },
     );
 
-    await secretSanta.sendConsolation(
+    await secretSanta.sendPrize(
       [nft.address],
       [tokenId], {
         from: accounts[0],
@@ -81,13 +81,13 @@ contract('SecretSanta', (accounts) => {
     const owner = await nft.ownerOf(tokenId);
     assert.equal(owner, secretSanta.address, 'Token owner is wrong');
 
-    const consolation = await secretSanta.getConsolation();
+    const prize = await secretSanta.getPrize();
 
-    assert.ok(consolation.tokens.includes(nft.address), 'Consolation tokens are wrong');
-    assert.ok(consolation.tokensId[0].eq(utils.toBN(tokenId)), 'Consolation tokens IDs are wrong');
+    assert.ok(prize.tokens.includes(nft.address), 'Prize tokens are wrong');
+    assert.ok(prize.tokensId[0].eq(utils.toBN(tokenId)), 'Prize tokens IDs are wrong');
   });
 
-  it('Should NOT send a consolation', async () => {
+  it('Should NOT send a prize', async () => {
     const tokenId = '0';
 
     await nft.getSantaNonFungibleToken(
@@ -101,7 +101,7 @@ contract('SecretSanta', (accounts) => {
     );
 
     await expectRevert(
-      secretSanta.sendConsolation(
+      secretSanta.sendPrize(
         [nft.address],
         [tokenId], {
           from: accounts[0],
@@ -111,7 +111,7 @@ contract('SecretSanta', (accounts) => {
     );
   });
 
-  it('Should send one present after the consolation', async () => {
+  it('Should send one present after the prize', async () => {
     const tokenId = '0';
 
     await secretSanta.updateWhitelist(
@@ -135,7 +135,7 @@ contract('SecretSanta', (accounts) => {
       },
     );
 
-    await secretSanta.sendConsolation(
+    await secretSanta.sendPrize(
       [nft.address],
       [tokenId], {
         from: accounts[0],
@@ -169,7 +169,7 @@ contract('SecretSanta', (accounts) => {
     assert.equal(owner, accounts[0], 'NFT owner is wrong');
   });
 
-  it('Should send a consolation, one present, and claim the consolation', async () => {
+  it('Should send a prize, one present, and claim the prize', async () => {
     const tokenId = '0';
 
     await secretSanta.updateWhitelist(
@@ -193,7 +193,7 @@ contract('SecretSanta', (accounts) => {
       },
     );
 
-    await secretSanta.sendConsolation(
+    await secretSanta.sendPrize(
       [nft.address],
       [tokenId], {
         from: accounts[0],
@@ -227,23 +227,23 @@ contract('SecretSanta', (accounts) => {
     assert.equal(owner, accounts[0], 'NFT owner is wrong');
 
     let lastPresentAt = await secretSanta.lastPresentAt();
-    let consolationDelay = await secretSanta.consolationDelay();
+    let prizeDelay = await secretSanta.prizeDelay();
 
     if (!utils.isBN(lastPresentAt)) {
       lastPresentAt = utils.toBN(lastPresentAt);
     }
 
-    if (!utils.isBN(consolationDelay)) {
-      consolationDelay = utils.toBN(consolationDelay);
+    if (!utils.isBN(prizeDelay)) {
+      prizeDelay = utils.toBN(prizeDelay);
     }
 
-    await time.increaseTo(lastPresentAt.add(consolationDelay.add(consolationDelay)));
+    await time.increaseTo(lastPresentAt.add(prizeDelay.add(prizeDelay)));
 
-    await secretSanta.claimConsolation({
+    await secretSanta.claimPrize({
       from: accounts[1],
     });
 
-    const consolationOwner = await nft.ownerOf(tokenId);
-    assert.equal(consolationOwner, accounts[1], 'NFT owner is wrong');
+    const prizeOwner = await nft.ownerOf(tokenId);
+    assert.equal(prizeOwner, accounts[1], 'NFT owner is wrong');
   });
 });
