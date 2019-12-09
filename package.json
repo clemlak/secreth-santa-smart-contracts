@@ -5,7 +5,7 @@
   "scripts": {
     "test": "truffle test",
     "run-ganache": "ganache-cli",
-    "flatten": "./node_modules/.bin/truffle-flattener ./contracts/SecretSanta.sol",
+    "flatten": "./node_modules/.bin/truffle-flattener ./contracts/SecretSanta.sol --output SecretSantaFlatten.sol",
     "migrate-rinkeby": "truffle migrate --network rinkeby --reset"
   },
   "dependencies": {

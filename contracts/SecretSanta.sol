@@ -34,8 +34,8 @@ contract SecretSanta is Ownable {
 
     event PrizeAdded(
         address indexed from,
-        address tokens[],
-        address tokensId[],
+        address[] tokens,
+        uint256[] tokensId
     );
 
     constructor(
@@ -87,7 +87,7 @@ contract SecretSanta is Ownable {
         emit PrizeAdded(
             msg.sender,
             tokens,
-            tokensId,
+            tokensId
         );
     }
 

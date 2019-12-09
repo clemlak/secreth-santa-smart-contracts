@@ -19,7 +19,7 @@ contract('SecretSanta', (accounts) => {
 
   beforeEach(async () => {
     secretSanta = await SecretSanta.new(60 * 5);
-    nft = await SantaNonFungibleToken.new();
+    nft = await SantaNonFungibleToken.new('SantaNonFungibleToken', 'SNFT');
   });
 
   it('Should whitelist a token contract', async () => {
@@ -52,6 +52,7 @@ contract('SecretSanta', (accounts) => {
     await nft.getSantaNonFungibleToken(
       accounts[0],
       tokenId,
+      '',
     );
 
     await nft.approve(
@@ -93,6 +94,7 @@ contract('SecretSanta', (accounts) => {
     await nft.getSantaNonFungibleToken(
       accounts[0],
       tokenId,
+      '',
     );
 
     await nft.approve(
@@ -123,7 +125,8 @@ contract('SecretSanta', (accounts) => {
 
     await nft.getSantaNonFungibleToken(
       accounts[0],
-      tokenId, {
+      tokenId,
+      '', {
         from: accounts[0],
       },
     );
@@ -146,7 +149,8 @@ contract('SecretSanta', (accounts) => {
 
     await nft.getSantaNonFungibleToken(
       accounts[1],
-      tokenId2, {
+      tokenId2,
+      '', {
         from: accounts[1],
       },
     );
@@ -181,7 +185,8 @@ contract('SecretSanta', (accounts) => {
 
     await nft.getSantaNonFungibleToken(
       accounts[0],
-      tokenId, {
+      tokenId,
+      '', {
         from: accounts[0],
       },
     );
@@ -204,7 +209,8 @@ contract('SecretSanta', (accounts) => {
 
     await nft.getSantaNonFungibleToken(
       accounts[1],
-      tokenId2, {
+      tokenId2,
+      '', {
         from: accounts[1],
       },
     );
