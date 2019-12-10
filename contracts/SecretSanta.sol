@@ -15,7 +15,7 @@ contract ERC721 {
  */
 contract SecretSanta is Ownable {
     address public lastSecretSanta;
-    bool public isPrizeClaimed = false;
+    bool public isPrizeClaimed;
 
     uint256 public lastPresentAt;
     uint256 public prizeDelay;
