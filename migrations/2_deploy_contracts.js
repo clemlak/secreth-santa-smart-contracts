@@ -5,7 +5,7 @@ const SecretSanta = artifacts.require('SecretSanta');
 const SantaNonFungibleToken = artifacts.require('SantaNonFungibleToken');
 
 function deployContracts(deployer, network) {
-  const prizeDelay = network === 'mainnet' ? 60 * 60 * 24 * 14 : 60 * 60;
+  const prizeDelay = network === 'mainnet' ? 60 * 60 * 24 * 14 : 60 * 15;
 
   deployer.deploy(SecretSanta, prizeDelay);
 
