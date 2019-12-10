@@ -74,10 +74,6 @@ contract('SecretSanta', (accounts) => {
       },
     );
 
-    const lastSecretSanta = await secretSanta.lastSecretSanta();
-
-    assert.equal(lastSecretSanta, accounts[0], 'Last Secret Santa is wrong');
-
     const owner = await nft.ownerOf(tokenId);
     assert.equal(owner, secretSanta.address, 'Token owner is wrong');
 
@@ -170,6 +166,9 @@ contract('SecretSanta', (accounts) => {
 
     const owner = await nft.ownerOf(tokenId2);
     assert.equal(owner, accounts[0], 'NFT owner is wrong');
+
+    const lastSecretSanta = await secretSanta.lastSecretSanta();
+    assert.equal(lastSecretSanta, accounts[1]);
   });
 
   it('Should send a prize, one present, and claim the prize', async () => {
