@@ -9,7 +9,7 @@ contract ERC721 {
 
 
 /**
- * @title Secret Santa with NFTs
+ * @title Secret Santa with NFTs (www.secrethsanta.co)
  * @notice All the logic of the contract happens here
  * @author Clemlak
  */
@@ -41,6 +41,7 @@ contract SecretSanta is Ownable {
     constructor(
         uint256 initialPrizeDelay
     ) public {
+        lastSecretSanta = msg.sender;
         lastPresentAt = now;
         prizeDelay = initialPrizeDelay;
     }
@@ -86,9 +87,6 @@ contract SecretSanta is Ownable {
             tokens,
             tokensId
         );
-
-        lastSecretSanta = msg.sender;
-        lastPresentAt = now;
     }
 
     /**
