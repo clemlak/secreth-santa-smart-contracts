@@ -14,7 +14,7 @@ contract ERC721 {
  * @author Clemlak
  */
 contract SecretSanta is Ownable {
-    address[] public secretSantas;
+    address public lastSecretSanta;
     bool public isPrizeClaimed = false;
 
     uint256 public lastPresentAt;
@@ -81,14 +81,14 @@ contract SecretSanta is Ownable {
             prizeTokensId.push(tokensId[i]);
         }
 
-        secretSantas.push(msg.sender);
-        lastPresentAt = now;
-
         emit PrizeAdded(
             msg.sender,
             tokens,
             tokensId
         );
+
+        lastSecretSanta = msg.sender;
+        lastPresentAt = now;
     }
 
     /**
@@ -114,19 +114,19 @@ contract SecretSanta is Ownable {
 
         token.transferFrom(
             msg.sender,
-            secretSantas[secretSantas.length - 1],
+            lastSecretSanta,
             tokenId
         );
-
-        secretSantas.push(msg.sender);
-        lastPresentAt = now;
 
         emit PresentSent(
             msg.sender,
-            secretSantas[secretSantas.length - 1],
+            lastSecretSanta,
             tokenAddress,
             tokenId
         );
+
+        lastSecretSanta = msg.sender;
+        lastPresentAt = now;
     }
 
     /**
@@ -139,7 +139,7 @@ contract SecretSanta is Ownable {
         );
 
         require(
-            msg.sender == secretSantas[secretSantas.length - 1],
+            msg.sender == lastSecretSanta,
             "Sender not last Santa"
         );
 
@@ -163,10 +163,6 @@ contract SecretSanta is Ownable {
         for (uint256 i = 0; i < tokens.length; i += 1) {
             whitelist[tokens[i]] = isApproved;
         }
-    }
-
-    function getSecretSantas() external view returns (address[] memory) {
-        return secretSantas;
     }
 
     function getPrize() external view returns (

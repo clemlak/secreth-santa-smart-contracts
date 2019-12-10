@@ -74,10 +74,9 @@ contract('SecretSanta', (accounts) => {
       },
     );
 
-    const secretSantas = await secretSanta.getSecretSantas();
+    const lastSecretSanta = await secretSanta.lastSecretSanta();
 
-    assert.equal(secretSantas.length, 1, 'Secret Santas total is wrong');
-    assert.ok(secretSantas.includes(accounts[0]), 'Secret Santas is wrong');
+    assert.equal(lastSecretSanta, accounts[0], 'Last Secret Santa is wrong');
 
     const owner = await nft.ownerOf(tokenId);
     assert.equal(owner, secretSanta.address, 'Token owner is wrong');
