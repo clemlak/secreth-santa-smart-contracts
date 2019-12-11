@@ -6,7 +6,8 @@
     "test": "truffle test",
     "run-ganache": "ganache-cli",
     "flatten": "./node_modules/.bin/truffle-flattener ./contracts/SecretSanta.sol --output SecretSantaFlatten.sol",
-    "migrate-rinkeby": "truffle migrate --network rinkeby --reset"
+    "migrate-rinkeby": "truffle migrate --network rinkeby --reset",
+    "migrate-live": "truffle migrate --network live --reset"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^2.4.0",
