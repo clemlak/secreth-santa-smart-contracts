@@ -2,8 +2,8 @@ require('dotenv').config();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const Utils = require('web3-utils');
 
-const mainnetUrl = `https://${process.env.RIVET}.rinkeby.rpc.rivet.cloud/`;
-const rinkebyUrl = `https://${process.env.RIVET}.eth.rpc.rivet.cloud/`;
+const mainnetUrl = `https://${process.env.RIVET}.eth.rpc.rivet.cloud/`;
+const rinkebyUrl = `https://${process.env.RIVET}.rinkeby.rpc.rivet.cloud/`;
 
 module.exports = {
   networks: {
