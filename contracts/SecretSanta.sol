@@ -11,11 +11,11 @@ contract ERC721 {
 /**
  * @title Secret Santa with NFTs (www.secrethsanta.co)
  * @notice All the logic of the contract happens here
+ * @dev This new contract fixes the loop issue in the claimPrize function
  * @author Clemlak
  */
 contract SecretSanta is Ownable {
     address public lastSecretSanta;
-    bool public isPrizeClaimed;
 
     uint256 public lastPresentAt;
     uint256 public prizeDelay;
@@ -66,12 +66,8 @@ contract SecretSanta is Ownable {
         );
 
         for (uint256 i = 0; i < tokens.length; i += 1) {
-            require(
-                whitelist[tokens[i]],
-                "Token not whitelisted"
-            );
-
             ERC721 token = ERC721(tokens[i]);
+
             token.transferFrom(
                 msg.sender,
                 address(this),
@@ -130,7 +126,10 @@ contract SecretSanta is Ownable {
     /**
      * @notice Claims the prize
      */
-    function claimPrize() external {
+    function claimPrize(
+        address[] calldata tokens,
+        uint256[] calldata tokensId
+    ) external {
         require(
             now > lastPresentAt + prizeDelay,
             "Not yet"
@@ -141,17 +140,15 @@ contract SecretSanta is Ownable {
             "Sender not last Santa"
         );
 
-        for (uint256 i = 0; i < prizeTokens.length; i += 1) {
-            ERC721 token = ERC721(prizeTokens[i]);
+        for (uint256 i = 0; i < tokens.length; i += 1) {
+            ERC721 token = ERC721(tokens[i]);
 
             token.transferFrom(
                 address(this),
                 msg.sender,
-                prizeTokensId[i]
+                tokensId[i]
             );
         }
-
-        isPrizeClaimed = true;
     }
 
     function updateWhitelist(
