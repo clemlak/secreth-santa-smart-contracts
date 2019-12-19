@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "truffle test",
-    "run-ganache": "ganache-cli",
+    "run-ganache": "ganache-cli -l 10000000 -g 2000000000",
     "flatten": "./node_modules/.bin/truffle-flattener ./contracts/SecretSanta.sol --output SecretSantaFlatten.sol",
     "migrate-rinkeby": "truffle migrate --network rinkeby --reset",
     "migrate-live": "truffle migrate --network live --reset"
