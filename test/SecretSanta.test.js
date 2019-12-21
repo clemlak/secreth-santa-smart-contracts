@@ -143,12 +143,19 @@ contract('SecretSanta', (accounts) => {
       },
     );
 
-    await secretSanta.sendPresent(
+    const receipt = await secretSanta.sendPresent(
       nfts[0].address,
       tokenId2, {
         from: accounts[1],
       },
     );
+
+    expectEvent(receipt, 'PresentSent', {
+      from: accounts[1],
+      to: accounts[0],
+      token: nfts[0].address,
+      tokenId: tokenId2,
+    });
 
     const owner = await nfts[0].ownerOf(tokenId2);
     assert.equal(owner, accounts[0], 'NFT owner is wrong');
@@ -237,5 +244,100 @@ contract('SecretSanta', (accounts) => {
         from: accounts[1],
       },
     );
+  });
+
+  it('Should send a bunch of prizes, presents, and claim the prize', async () => {
+    for (let i = 0; i < max; i += 1) {
+      await secretSanta.updateWhitelist(
+        [nfts[i].address],
+        true, {
+          from: accounts[0],
+        },
+      );
+    }
+
+    for (let i = 0; i < max; i += 1) {
+      await nfts[i].getSantaNonFungibleToken(
+        accounts[0],
+        i,
+        '', {
+          from: accounts[0],
+        },
+      );
+    }
+
+    for (let i = 0; i < max; i += 1) {
+      await nfts[i].approve(
+        secretSanta.address,
+        i, {
+          from: accounts[0],
+        },
+      );
+    }
+
+    for (let i = 0; i < max; i += 1) {
+      await secretSanta.sendPrize(
+        [nfts[i].address],
+        [i], {
+          from: accounts[0],
+        },
+      );
+    }
+
+    for (let i = 0; i < 10; i += 1) {
+      await nfts[i].getSantaNonFungibleToken(
+        accounts[i],
+        10 + i,
+        '', {
+          from: accounts[i],
+        },
+      );
+    }
+
+    for (let i = 0; i < 10; i += 1) {
+      await nfts[i].approve(
+        secretSanta.address,
+        10 + i, {
+          from: accounts[i],
+        },
+      );
+    }
+
+    for (let i = 0; i < 10; i += 1) {
+      await secretSanta.sendPresent(
+        nfts[i].address,
+        10 + i, {
+          from: accounts[i],
+        },
+      );
+    }
+
+    let lastPresentAt = await secretSanta.lastPresentAt();
+    let prizeDelay = await secretSanta.prizeDelay();
+
+    if (!utils.isBN(lastPresentAt)) {
+      lastPresentAt = utils.toBN(lastPresentAt);
+    }
+
+    if (!utils.isBN(prizeDelay)) {
+      prizeDelay = utils.toBN(prizeDelay);
+    }
+
+    await time.increaseTo(lastPresentAt.add(prizeDelay.add(prizeDelay)));
+
+    const prize = await secretSanta.getPrize();
+
+    await secretSanta.claimPrize(
+      prize.tokens,
+      prize.tokensId, {
+        from: accounts[9],
+      },
+    );
+
+    for (let i = 0; i < prize.tokens.length; i += 1) {
+      const owner = await contractsByAddress[prize.tokens[i]].ownerOf(prize.tokensId[i]);
+
+      assert.equal(owner, accounts[9], 'NFT owner is wrong');
+    }
   });
 });
