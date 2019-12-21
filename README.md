@@ -1,4 +1,4 @@
-# 🎅 SecretSanta
+# SecretSanta
 > 👤 Clemlak
 ```
 Secret Santa with NFTs (www.secrethsanta.co)
@@ -10,11 +10,14 @@ Secret Santa with NFTs (www.secrethsanta.co)
 All the logic of the contract happens here
 
 
+### 🔎 Details
+
+This new contract fixes the loop issue in the claimPrize function
 
 ### 📡 Networks
 
 The contract has been deployed to:
-* **Network 1**: `0x8496B5CE2851B1DA7833e61B84043890b4b94bFA`
+* **Network 1**: `0xB2549cdD574C8Bd7Ac91031B9209147597Fffb1a`
 
 
 
@@ -55,23 +58,6 @@ The contract has been deployed to:
 ### 🔎 Details
 
 Returns true if the caller is the current owner.
-
-### → Returns
-
-
-
-| Name | Type |
-|:-:|:-:|
-|  Not specified  | `bool` |
-
-
-
-## `isPrizeClaimed`
-
->👀 `view`
-
-
-
 
 ### → Returns
 
