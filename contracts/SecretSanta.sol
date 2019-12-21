@@ -66,6 +66,11 @@ contract SecretSanta is Ownable {
         );
 
         for (uint256 i = 0; i < tokens.length; i += 1) {
+            require(
+                whitelist[tokens[i]],
+                "Token not whitelisted"
+            );
+
             ERC721 token = ERC721(tokens[i]);
 
             token.transferFrom(

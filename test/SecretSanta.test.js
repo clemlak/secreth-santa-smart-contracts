@@ -94,6 +94,31 @@ contract('SecretSanta', (accounts) => {
     assert.ok(prize.tokensId[0].eq(utils.toBN(tokenId)), 'Prize tokens IDs are wrong');
   });
 
+  it('Should not send a prize', async () => {
+    const tokenId = '0';
+
+    await nfts[0].getSantaNonFungibleToken(
+      accounts[0],
+      tokenId,
+      '',
+    );
+
+    await nfts[0].approve(
+      secretSanta.address,
+      tokenId,
+    );
+
+    await expectRevert(
+      secretSanta.sendPrize(
+        [nfts[0].address],
+        [tokenId], {
+          from: accounts[0],
+        },
+      ),
+      'Token not whitelisted',
+    );
+  });
+
   it('Should send one present after the prize', async () => {
     const tokenId = '0';
 
@@ -243,6 +268,157 @@ contract('SecretSanta', (accounts) => {
       prize.tokensId, {
         from: accounts[1],
       },
+    );
+  });
+
+  it('Should send a prize, one present, and prevent a wrong user from claiming the prize', async () => {
+    const tokenId = '0';
+
+    await secretSanta.updateWhitelist(
+      [nfts[0].address],
+      true, {
+        from: accounts[0],
+      },
+    );
+
+    await nfts[0].getSantaNonFungibleToken(
+      accounts[0],
+      tokenId,
+      '', {
+        from: accounts[0],
+      },
+    );
+
+    await nfts[0].approve(
+      secretSanta.address,
+      tokenId, {
+        from: accounts[0],
+      },
+    );
+
+    await secretSanta.sendPrize(
+      [nfts[0].address],
+      [tokenId], {
+        from: accounts[0],
+      },
+    );
+
+    const tokenId2 = '1';
+
+    await nfts[0].getSantaNonFungibleToken(
+      accounts[1],
+      tokenId2,
+      '', {
+        from: accounts[1],
+      },
+    );
+
+    await nfts[0].approve(
+      secretSanta.address,
+      tokenId2, {
+        from: accounts[1],
+      },
+    );
+
+    await secretSanta.sendPresent(
+      nfts[0].address,
+      tokenId2, {
+        from: accounts[1],
+      },
+    );
+
+    let lastPresentAt = await secretSanta.lastPresentAt();
+    let prizeDelay = await secretSanta.prizeDelay();
+
+    if (!utils.isBN(lastPresentAt)) {
+      lastPresentAt = utils.toBN(lastPresentAt);
+    }
+
+    if (!utils.isBN(prizeDelay)) {
+      prizeDelay = utils.toBN(prizeDelay);
+    }
+
+    await time.increaseTo(lastPresentAt.add(prizeDelay.add(prizeDelay)));
+
+    const prize = await secretSanta.getPrize();
+
+    await expectRevert(
+      secretSanta.claimPrize(
+        prize.tokens,
+        prize.tokensId, {
+          from: accounts[3],
+        },
+      ),
+      'Sender not last Santa',
+    );
+  });
+
+  it('Should send a prize, one present, and not claim the prize because it is too early', async () => {
+    const tokenId = '0';
+
+    await secretSanta.updateWhitelist(
+      [nfts[0].address],
+      true, {
+        from: accounts[0],
+      },
+    );
+
+    await nfts[0].getSantaNonFungibleToken(
+      accounts[0],
+      tokenId,
+      '', {
+        from: accounts[0],
+      },
+    );
+
+    await nfts[0].approve(
+      secretSanta.address,
+      tokenId, {
+        from: accounts[0],
+      },
+    );
+
+    await secretSanta.sendPrize(
+      [nfts[0].address],
+      [tokenId], {
+        from: accounts[0],
+      },
+    );
+
+    const tokenId2 = '1';
+
+    await nfts[0].getSantaNonFungibleToken(
+      accounts[1],
+      tokenId2,
+      '', {
+        from: accounts[1],
+      },
+    );
+
+    await nfts[0].approve(
+      secretSanta.address,
+      tokenId2, {
+        from: accounts[1],
+      },
+    );
+
+    await secretSanta.sendPresent(
+      nfts[0].address,
+      tokenId2, {
+        from: accounts[1],
+      },
+    );
+
+    const prize = await secretSanta.getPrize();
+
+    await expectRevert(
+      secretSanta.claimPrize(
+        prize.tokens,
+        prize.tokensId, {
+          from: accounts[1],
+        },
+      ),
+      'Not yet',
     );
   });
 
